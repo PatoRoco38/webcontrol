@@ -7,3 +7,6 @@ class Cadastro(models.Model):
     senha = models.CharField('Senha', max_length=100)
     telefone = models.CharField('Telefone', max_length=15, blank=True, null=True)
     data_cadastro = models.DateTimeField('Data de Cadastro', auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.nome}'
