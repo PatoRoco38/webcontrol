@@ -22,4 +22,5 @@ def login(request):
             return render(request, 'login.html', {'error': 'Usuário ou senha inválidos'})
     return render(request, 'login.html')
 
-
+def cadastro(request):
+    return render(request, 'cadastro.html')

@@ -81,7 +81,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'webdb',
         'USER': 'webmaster',
-        'PASSWORD': 'sl1v3r',
+        'PASSWORD': 'speedBD50',
         'HOST': 'localhost',
         'PORT': '3306',
 
