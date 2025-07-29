@@ -11,6 +11,8 @@ document.addEventListener("DOMContentLoaded", function () {
                         document.getElementById('bairro').value = data.bairro;
                         document.getElementById('cidade').value = data.localidade;
                         document.getElementById('uf').value = data.uf;
+                        // País não é retornado pela API ViaCEP, mas pode ser adicionado manualmente
+                        document.getElementById('pais').value = "Brasil";
                     } else {
                         alert("CEP não encontrado.");
                     }
