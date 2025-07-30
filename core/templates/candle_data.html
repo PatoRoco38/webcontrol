@@ -1,0 +1,47 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gráfico de Candle</title>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+</head>
+<body>
+    <input type="text" id="ticker" placeholder="Digite o ticker" value="AAPL">
+    <button onclick="buscarTicker()">Buscar</button>
+    <div id="chart"></div>
+
+    <script>
+        let chart;
+
+        function buscarTicker() {
+            const ticker = document.getElementById('ticker').value;
+            fetch(`/candle-data/?ticker=${ticker}`)
+                .then(res => res.json())
+                .then(data => renderChart(data.candles));
+        }
+
+        function renderChart(candles) {
+            if (chart) chart.destroy();
+
+            const options = {
+                chart: {
+                    type: 'candlestick',
+                    height: 500
+                },
+                series: [{
+                    data: candles
+                }],
+                xaxis: {
+                    type: 'datetime'
+                }
+            };
+
+            chart = new ApexCharts(document.querySelector("#chart"), options);
+            chart.render();
+        }
+
+        // Carrega o gráfico padrão
+        buscarTicker();
+    </script>
+</body>
+</html>

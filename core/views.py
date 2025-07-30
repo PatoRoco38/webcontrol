@@ -1,8 +1,11 @@
+import yfinance as yf
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login as auth_login
 from core.models import Cadastro
 from django.contrib.auth.hashers import make_password
+from django.http import JsonResponse
+from datetime import datetime, timedelta
 
 
 # View para acessar a página inicial, o @login_required garante que o usuário esteja autenticado
@@ -71,3 +74,19 @@ def sobre(request):
 
 def dashboard(request):
     return render(request, 'dashboard.html')
+
+def candle_data(request):
+    ticker = request.GET.get('ticker', 'AAPL') # padrão AAPL
+    period = request.GET.get('period', '7d') # padrão 71 dias
+
+    data = yf.download(ticker, period=period, interval='1h')
+    
+    ohlc = []
+    for index, row in data.iterrows():
+        timestamp = int(index.timestamp() * 1000) # Javascript espera timestamp em milissegundos
+        ohlc.append({
+            'x': timestamp,
+            'y': [round(row['Open'], 2), round(row['High'], 2), round(row['Low'], 2), round(row['Close'], 2)]
+        })
+    
+    return JsonResponse({'candles': ohlc})
