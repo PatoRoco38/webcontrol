@@ -4,7 +4,7 @@ from django.contrib import admin
 from .models import Cadastro
 
 class CadastroAdmin(admin.ModelAdmin):
-    list_display = ('nome', 'email', 'telefone', 'data_cadastro')
+    list_display = ('nome', 'email', 'telefone', 'cidade', 'estado', 'pais')
     search_fields = ('nome', 'email')
 
 admin.site.register(Cadastro, CadastroAdmin)
