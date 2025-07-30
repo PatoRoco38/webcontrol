@@ -1,11 +1,20 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página Index</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body>
     <h1>Página índex - Aqui será exibido o menu principal</h1>
+
+    <div class="menu">
+        <button onclick="window.location.href='perfil.html'">Meu Perfil</button>
+        <button onclick="window.location.href='dashboard.html'">Dashboard</button>
+        <button onclick="window.location.href='sobre.html'">Sobre nós</button>
+        <button onclick="window.location.href='{% url 'login' %}'">Log off</button>
+    </div>
 </body>
 </html>
