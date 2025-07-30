@@ -24,3 +24,12 @@ def login(request):
 
 def cadastro(request):
     return render(request, 'cadastro.html')
+
+def perfil(request):
+    return render(request, 'perfil.html')
+
+def sobre(request):
+    return render(request, 'sobre.html')
+
+def dashboard(request):
+    return render(request, 'dashboard.html')
