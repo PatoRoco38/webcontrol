@@ -2,7 +2,7 @@ import yfinance as yf
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login as auth_login
-from core.models import Cadastro
+from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from django.http import JsonResponse
 from datetime import datetime, timedelta
@@ -17,32 +17,32 @@ def login(request):
     if request.method == 'POST':
         usuario = request.POST.get('usuario')
         senha = request.POST.get('senha')
-        try:
-            user = Cadastro.objects.get(nome_usuario=usuario, senha=senha)
-            request.session['usuario_id'] = user.id
-            return redirect('index')  # Redireciona para a página inicial após o login bem-sucedido
-        except Cadastro.DoesNotExist:
+        print(f"Recebendo dados de login: usuário={usuario}, senha={senha}")  # Log para depuração
+
+        user = authenticate(request, username=usuario, password=senha)
+        print(f"Autenticando usuário:", user)  # Log para depuração
+
+        if user is not None:
+            auth_login(request, user)
+
+            next_url = request.POST.get('next') or 'index'
+            return redirect(next_url)  # Redireciona para a página inicial após o login bem-sucedido
+        else:
             return render(request, 'login.html', {'error': 'Usuário ou senha inválidos'})
         
     return render(request, 'login.html')
 
-def index(request):
-    if 'usuario_id' not in request.session:
-        return redirect('login')
-    
-    return render(request, 'index.html')
-
 # Função para cadastrar um novo usuário
-@login_required
+
 def cadastro(request):
     if request.method == 'POST':
-        nome = request.POST.get('nome')
-        data_nascimento = request.POST.get('dataNascimento')
-        cidade = request.POST.get('cidade')
-        estado = request.POST.get('uf')
-        pais = request.POST.get('pais')
+        # nome = request.POST.get('nome')
+        # data_nascimento = request.POST.get('dataNascimento')
+        # cidade = request.POST.get('cidade')
+        # estado = request.POST.get('uf')
+        # pais = request.POST.get('pais')
         email = request.POST.get('email')
-        telefone = request.POST.get('telefone')
+        # telefone = request.POST.get('telefone')
         nome_usuario = request.POST.get('usuario')
         senha = request.POST.get('senha')
         confirmar_senha = request.POST.get('confirmarSenha')
@@ -50,17 +50,15 @@ def cadastro(request):
         if senha != confirmar_senha:
             return render(request, 'cadastro.html', {'error': 'As senhas não conferem.'})
 
-        Cadastro.objects.create(
-            nome=nome,
-            data_nascimento=data_nascimento,
-            cidade=cidade,
-            estado=estado,
-            pais=pais,
+        if User.objects.filter(username=nome_usuario).exists():
+            return render(request, 'cadastro.html', {'error': 'Nome de usuário já existe.'})
+        
+        user = User.objects.create_user(
+            username=nome_usuario,
             email=email,
-            telefone=telefone,
-            nome_usuario=nome_usuario,
-            senha=make_password(senha)  
+            password=senha
         )
+
         return redirect('login')
 
     return render(request, 'cadastro.html')
@@ -74,6 +72,10 @@ def sobre(request):
 
 def dashboard(request):
     return render(request, 'dashboard.html')
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
 
 def candle_data(request):
     ticker = request.GET.get('ticker', 'AAPL') # padrão AAPL
