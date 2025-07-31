@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from django.http import JsonResponse
 from datetime import datetime, timedelta
+from .models import UserProfile
 
 
 # View para acessar a página inicial, o @login_required garante que o usuário esteja autenticado
@@ -17,10 +18,8 @@ def login(request):
     if request.method == 'POST':
         usuario = request.POST.get('usuario')
         senha = request.POST.get('senha')
-        print(f"Recebendo dados de login: usuário={usuario}, senha={senha}")  # Log para depuração
 
         user = authenticate(request, username=usuario, password=senha)
-        print(f"Autenticando usuário:", user)  # Log para depuração
 
         if user is not None:
             auth_login(request, user)
@@ -36,13 +35,13 @@ def login(request):
 
 def cadastro(request):
     if request.method == 'POST':
-        # nome = request.POST.get('nome')
-        # data_nascimento = request.POST.get('dataNascimento')
-        # cidade = request.POST.get('cidade')
-        # estado = request.POST.get('uf')
-        # pais = request.POST.get('pais')
+        nome = request.POST.get('nome')
+        data_nascimento = request.POST.get('dataNascimento')
+        cidade = request.POST.get('cidade')
+        estado = request.POST.get('uf')
+        pais = request.POST.get('pais')
         email = request.POST.get('email')
-        # telefone = request.POST.get('telefone')
+        telefone = request.POST.get('telefone')
         nome_usuario = request.POST.get('usuario')
         senha = request.POST.get('senha')
         confirmar_senha = request.POST.get('confirmarSenha')
@@ -57,6 +56,16 @@ def cadastro(request):
             username=nome_usuario,
             email=email,
             password=senha
+        )
+
+        perfil = UserProfile.objects.create(
+            user=user,
+            nome_completo=nome,
+            data_nascimento=data_nascimento,
+            cidade=cidade,
+            estado=estado,
+            pais=pais,
+            telefone=telefone
         )
 
         return redirect('login')
