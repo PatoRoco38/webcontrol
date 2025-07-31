@@ -1,0 +1,69 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Gráfico de Candle</title>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+</head>
+<body>
+  <h2>Gráfico de Candle</h2>
+
+  <form id="ticker-form">
+    <input type="text" id="ticker-input" placeholder="Digite o ticker (ex: PETR4.SA)">
+    <button type="submit">Carregar</button>
+  </form>
+
+  <div id="chart" style="max-width: 900px; margin: 30px auto;"></div>
+
+  <script>
+    const form = document.getElementById('ticker-form');
+    const input = document.getElementById('ticker-input');
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const ticker = input.value;
+      const res = await fetch(`/candle_data/?ticker=${ticker}`);
+      const json = await res.json();
+
+      if (!json.candles || json.candles.length === 0) {
+        alert(json.error || 'Sem dados');
+        return;
+      }
+
+      const series = json.candles.map(item => ({
+        x: new Date(item.x),
+        y: item.y
+      }));
+
+      const options = {
+        chart: {
+          type: 'candlestick',
+          height: 500
+        },
+        title: {
+          text: `Candlestick - ${ticker}`,
+          align: 'left'
+        },
+        series: [{
+          data: series
+        }],
+        xaxis: {
+          type: 'datetime'
+        },
+        yaxis: {
+          tooltip: {
+            enabled: true
+          }
+        }
+      };
+
+      const chartDiv = document.querySelector("#chart");
+      chartDiv.innerHTML = ""; // limpa gráfico anterior
+      const chart = new ApexCharts(chartDiv, options);
+      chart.render();
+    });
+  </script>
+</body>
+</html>

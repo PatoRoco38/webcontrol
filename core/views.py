@@ -1,4 +1,5 @@
 import yfinance as yf
+import pandas as pd
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login as auth_login
@@ -87,17 +88,47 @@ def logout_view(request):
     return redirect('login')
 
 def candle_data(request):
-    ticker = request.GET.get('ticker', 'AAPL') # padrão AAPL
-    period = request.GET.get('period', '7d') # padrão 71 dias
+    import traceback
+    from django.http import JsonResponse
+    import yfinance as yf
 
-    data = yf.download(ticker, period=period, interval='1h')
-    
-    ohlc = []
-    for index, row in data.iterrows():
-        timestamp = int(index.timestamp() * 1000) # Javascript espera timestamp em milissegundos
-        ohlc.append({
-            'x': timestamp,
-            'y': [round(row['Open'], 2), round(row['High'], 2), round(row['Low'], 2), round(row['Close'], 2)]
-        })
-    
-    return JsonResponse({'candles': ohlc})
+    ticker = request.GET.get('ticker', 'AAPL')
+    period = request.GET.get('period', '7d')
+    interval = request.GET.get('interval', '1h')
+
+    try:
+        data = yf.download(ticker, period=period, interval=interval, auto_adjust=False)
+
+        # Se as colunas forem MultiIndex, aplanar
+        if isinstance(data.columns, pd.MultiIndex):
+            data.columns = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
+
+
+
+        required_columns = {'Open', 'High', 'Low', 'Close'}
+        if data.empty or not required_columns.issubset(data.columns):
+            print(f"Ticker {ticker} retornou dados inválidos ou vazios:")
+            print(data.head())
+            return JsonResponse({'candles': [], 'error': f'Dados indisponíveis para o ativo {ticker}'}, status=400)
+
+        data.dropna(subset=required_columns, inplace=True)
+
+        ohlc = []
+        for index, row in data.iterrows():
+            timestamp = int(index.timestamp() * 1000)
+            ohlc.append({
+                'x': timestamp,
+                'y': [
+                    round(float(row['Open']), 2),
+                    round(float(row['High']), 2),
+                    round(float(row['Low']), 2),
+                    round(float(row['Close']), 2)
+                ]
+            })
+
+        return JsonResponse({'candles': ohlc})
+
+    except Exception as e:
+        print(f"Erro ao obter dados do ativo {ticker}:")
+        traceback.print_exc()
+        return JsonResponse({'error': 'Erro interno ao processar os dados.'}, status=500)
